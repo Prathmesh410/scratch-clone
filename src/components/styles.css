@@ -1,0 +1,29 @@
+.sidebarEvents {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    background-color: #4C97FE;
+    border: 1px solid #CCCCC1;
+    border-radius: 5px;
+    color: #000000;
+    padding: 8px;
+    gap: 8px;
+    font-size: 0.875rem;
+    font-weight: bold;
+    cursor: pointer;
+    
+
+}
+
+.deleteBTN {
+    margin-left: auto;
+    background-color: #4C97FE;
+}
+
+.deleteBTN button{
+    background-color: transparent;
+    cursor: pointer;
+    border: none;
+
+}
