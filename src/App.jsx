@@ -17,11 +17,28 @@ import "./App.css";
 function App() {
   return (
     <Stack gap={1}>
-      <AppBar position="static">
+      <AppBar position="static" sx={{ background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)' }}>
         <Toolbar>
-          <Typography variant="h5">MIT Scratch Juspay Assignment</Typography>
-          <Button color="inherit" sx={{ ml: "auto" }}>
-            JUSPAY
+          <Typography variant="h5" sx={{
+            fontWeight: 'bold',
+            background: 'linear-gradient(45deg, #FF8E53 30%, #FE6B8B 90%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            textShadow: '2px 2px 4px rgba(0,0,0,0.1)'
+          }}>
+            Scratch-clone
+          </Typography>
+          <Button
+            color="inherit"
+            sx={{
+              ml: "auto",
+              background: 'rgba(255,255,255,0.1)',
+              '&:hover': {
+                background: 'rgba(255,255,255,0.2)'
+              }
+            }}
+          >
+            JUSPAY ASSIGNMENT
           </Button>
         </Toolbar>
       </AppBar>
@@ -32,6 +49,9 @@ function App() {
         p={1}
         pb={0}
         height={"calc(100vh - 80px)"}
+        sx={{
+          background: 'linear-gradient(135deg, #f5f7fa 0%, #e4e8eb 100%)'
+        }}
       >
         <Box flexBasis={"25%"} className="container">
           <Sidebar />
