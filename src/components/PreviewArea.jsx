@@ -68,76 +68,86 @@ export default function PreviewArea() {
       (item) => item?.spriteId
     );
 
-    Object.keys(spriteInstructions).forEach((item) => {
-      const instructions = spriteInstructions[item];
-      const repeat = instructions?.[0]?.repeat || 1;
-      instructions.forEach((instruction) => {
-        if (instruction?.move) {
-          dispatch({
-            type: MOVE_SPRITE,
-            payload: {
-              id: instruction?.spriteId,
-              x: instruction?.move * repeat,
-            },
-          });
-        }
-        if (instruction?.xc || instruction?.yc) {
-          dispatch({
-            type: UPDATE_SPRITE_POSITION,
-            payload: {
-              id: instruction?.spriteId,
-              x: instruction?.xc * repeat,
-              y: instruction?.yc * repeat,
-            },
-          });
-        }
-        if (instruction?.turnLeft) {
-          dispatch({
-            type: ROTATE_SPRITE,
-            payload: {
-              id: instruction?.spriteId,
-              rotate: instruction?.turnLeft * repeat,
-            },
-          });
-        }
-        if (instruction?.say) {
-          // Find the sprite component and update its currentAction
-          const sprite = state.multipleSprites.find(s => s.id === instruction.spriteId);
-          if (sprite) {
-            const spriteComponent = sprites[sprite.name];
-            if (spriteComponent) {
-              const action = `say:${instruction.say.message}:${instruction.say.duration}`;
-              // Update the sprite's currentAction through the context
-              dispatch({
-                type: 'SET_SPRITE_ACTION',
-                payload: {
-                  id: instruction.spriteId,
-                  action
-                }
-              });
+    const executeInstruction = (instruction, spriteId, repeat = 1) => {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          if (instruction?.move) {
+            dispatch({
+              type: MOVE_SPRITE,
+              payload: {
+                id: spriteId,
+                x: instruction?.move * repeat,
+              },
+            });
+          }
+          if (instruction?.xc || instruction?.yc) {
+            dispatch({
+              type: UPDATE_SPRITE_POSITION,
+              payload: {
+                id: spriteId,
+                x: instruction?.xc * repeat,
+                y: instruction?.yc * repeat,
+              },
+            });
+          }
+          if (instruction?.turnLeft) {
+            dispatch({
+              type: ROTATE_SPRITE,
+              payload: {
+                id: spriteId,
+                rotate: instruction?.turnLeft * repeat,
+              },
+            });
+          }
+          if (instruction?.say) {
+            const sprite = state.multipleSprites.find(s => s.id === spriteId);
+            if (sprite) {
+              const spriteComponent = sprites[sprite.name];
+              if (spriteComponent) {
+                const action = `say:${instruction.say.message}:${instruction.say.duration}`;
+                dispatch({
+                  type: 'SET_SPRITE_ACTION',
+                  payload: {
+                    id: spriteId,
+                    action
+                  }
+                });
+              }
             }
           }
-        }
-        if (instruction?.think) {
-          // Find the sprite component and update its currentAction
-          const sprite = state.multipleSprites.find(s => s.id === instruction.spriteId);
-          if (sprite) {
-            const spriteComponent = sprites[sprite.name];
-            if (spriteComponent) {
-              const action = `think:${instruction.think.message}:${instruction.think.duration}`;
-              // Update the sprite's currentAction through the context
-              dispatch({
-                type: 'SET_SPRITE_ACTION',
-                payload: {
-                  id: instruction.spriteId,
-                  action
-                }
-              });
+          if (instruction?.think) {
+            const sprite = state.multipleSprites.find(s => s.id === spriteId);
+            if (sprite) {
+              const spriteComponent = sprites[sprite.name];
+              if (spriteComponent) {
+                const action = `think:${instruction.think.message}:${instruction.think.duration}`;
+                dispatch({
+                  type: 'SET_SPRITE_ACTION',
+                  payload: {
+                    id: spriteId,
+                    action
+                  }
+                });
+              }
             }
           }
-        }
+          resolve();
+        }, 500);
       });
-    });
+    };
+
+    const executeAllInstructions = async () => {
+      for (const spriteId of Object.keys(spriteInstructions)) {
+        const instructions = spriteInstructions[spriteId];
+        const repeat = instructions?.[0]?.repeat || 1;
+
+        for (const instruction of instructions) {
+          await executeInstruction(instruction, spriteId, repeat);
+        }
+      }
+    };
+
+    executeAllInstructions();
   }, [dispatch, state.midAreaData, state.multipleSprites]);
 
   const handleDragDrop = useCallback(
@@ -170,7 +180,6 @@ export default function PreviewArea() {
             (sprite1.x - sprite2.x) ** 2 + (sprite1.y - sprite2.y) ** 2
           );
           if (distance < 50) {
-            // Swap positions of the colliding sprites
             dispatch({
               type: SWAP_POSITIONS_OF_STRIPS,
               payload: {
@@ -179,12 +188,11 @@ export default function PreviewArea() {
               },
             });
 
-            // Move sprites away from each other
             const angle = Math.atan2(
               sprite2.y - sprite1.y,
               sprite2.x - sprite1.x
             );
-            const moveDistance = 40; // Distance to move sprites apart
+            const moveDistance = 40;
 
             dispatch({
               type: UPDATE_SPRITE_POSITION,
@@ -210,7 +218,7 @@ export default function PreviewArea() {
   }, [state.multipleSprites, dispatch]);
 
   useEffect(() => {
-    const interval = setInterval(checkCollision, 100); // Check for collisions every 100ms
+    const interval = setInterval(checkCollision, 100);
     return () => clearInterval(interval);
   }, [checkCollision]);
 
@@ -269,6 +277,7 @@ export default function PreviewArea() {
                 cursor: "move",
                 width: "50px",
                 height: "50px",
+                transition: "all 0.8s ease-in-out",
               }}
               draggable
               onDragStart={(e) => {
@@ -283,11 +292,14 @@ export default function PreviewArea() {
                 width: '100%',
                 height: '100%',
                 transform: `rotate(${item?.rotate}deg)`,
-                transition: "transform 1s linear"
+                transition: "transform 0.8s ease-in-out"
               }}>
                 {React.cloneElement(sprites[item?.name], {
                   currentAction: item.currentAction,
-                  style: { transform: 'none' }
+                  style: {
+                    transform: 'none',
+                    transition: "all 0.8s ease-in-out"
+                  }
                 })}
               </div>
             </Box>
